@@ -25,7 +25,7 @@
                 steem.api.setOptions({url: 'https://api.steemit.com'});
                 getAccountCount();
                 loadSelectBox();
-                getVoting();
+                //getVoting();
             };
 
             function loadSelectBox(){
@@ -49,13 +49,14 @@
             }
 
             async function getVoting(){
-                  // 보팅 금액 : 현재 스팀가격 * rshare * (스팀잔고 /  요청)
+                var link = $("#selectPerm").val();
+                username = $("#text_username").val();
                 var steemPrice = await steem.api.getCurrentMedianHistoryPriceAsync();
                 steemPrice = parseFloat(steemPrice.base.replace(" SBD"));
 
                 var fund = await steem.api.getRewardFundAsync('post');                
                 console.log(fund);
-                var result = await steem.api.getActiveVotesAsync('supergiant', 'follower-change-checker');
+                var result = await steem.api.getActiveVotesAsync(username, link);
                 var objectArray = [];
               
                 for(var i = 0; i < result.length; i++){
@@ -243,11 +244,12 @@
                         </div> 
                         <input type="text" id="text_username" class="form-control" placeholder="Username" aria-label="Username" aria-describedby="basic-addon1">
                         <div class="input-group-prepend">
-                                <label class="input-group-text" for="inputGroupSelect01">Post</label>
-                            </div>
+                            <label class="input-group-text" for="inputGroupSelect01" onclick="getVoting();">Post</label>
                             <select class="custom-select" id="selectPerm">
                             </select>
                         </div>
+                           
+                       
                         <!--<div id="alert" class="alert alert-danger" role="alert" style="display:none;"></div>-->
                         <button type="button" id="btn_check" class="btn btn-primary btn-lg btn-block" style="background-color:#205894; border-color:#205894; margin-top:10px;" onclick="getSteemData();">Check Now</button>
                     </div>
@@ -260,10 +262,10 @@
                     </div>
                     <select class="custom-select" id="voting">
                     </select>  
-                    <div class="card-footer text-muted">
-                        follower checker by <a style="margin:3px;" href="https://steemit.com/@supergiant" target="_blank">@supergiant</a>
-                    </div>
-                </div> 
+                </div>                    
+                <div class="card-footer text-muted">
+                    follower checker by <a style="margin:3px;" href="https://steemit.com/@supergiant" target="_blank">@supergiant</a>
+                </div>
             </div>
         </div>
     </body>
