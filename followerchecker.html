@@ -67,19 +67,12 @@
                 }
                 sortByKey(objectArray, 'SBD');
                 
-                var text1 = "";
-                for(var i = 0; i < objectArray.length; i++){
-                    var item = "$" + objectArray[i].SBD.toFixed(2) + "    " + makeString(objectArray[i].PERCENT) + "%      " + objectArray[i].ID;
-                    text1 += '<option>' + item + '</option>';
-                }
-                $("#voting").html(text1);
-                
-
                 var text = "";
                 for(var i = 0; i < objectArray.length; i++){
-                    text += "$" + objectArray[i].SBD.toFixed(2) + "    " + makeString(objectArray[i].PERCENT) + "%      " + objectArray[i].ID + "\r\n";
+                    var item = "$" + objectArray[i].SBD.toFixed(2) + "    " + makeString(objectArray[i].PERCENT) + "%      " + objectArray[i].ID;
+                    text += '<option>' + item + '</option>';
                 }
-                $("#voting2").text(text);
+                $("#voting").html(text);
             }
 
             function sortByKey(array, key) {
@@ -266,10 +259,7 @@
                         </div>
                     </div>
                     <select class="custom-select" id="voting">
-                    </select>
-                    <div class="input-group">
-                        <textarea id="voting2" class="form-control" aria-label="With textarea"></textarea>
-                    </div>
+                    </select>  
                     <div class="card-footer text-muted">
                         follower checker by <a style="margin:3px;" href="https://steemit.com/@supergiant" target="_blank">@supergiant</a>
                     </div>
