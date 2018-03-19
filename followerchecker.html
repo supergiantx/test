@@ -98,8 +98,9 @@
                 if(storage_username !==  username){
                     localStorage.clear();
                     $("#result").html(defaultHtml);
+                    loadSelectBox();
                 }
-                localStorage.setItem("username", username);                
+                localStorage.setItem("username", username);
                 
                 const result = await steem.api.getFollowCountAsync(username);
                 console.log(result);
@@ -243,16 +244,17 @@
                             <span class="input-group-text">Username</span>
                         </div> 
                         <input type="text" id="text_username" class="form-control" placeholder="Username" aria-label="Username" aria-describedby="basic-addon1">
-                        <div class="input-group-prepend">
-                            <label class="input-group-text" for="inputGroupSelect01" onclick="getVoting();">Post</label>
-                            <select class="custom-select" id="selectPerm">
-                            </select>
-                        </div>
-                           
-                       
-                        <!--<div id="alert" class="alert alert-danger" role="alert" style="display:none;"></div>-->
-                        <button type="button" id="btn_check" class="btn btn-primary btn-lg btn-block" style="background-color:#205894; border-color:#205894; margin-top:10px;" onclick="getSteemData();">Check Now</button>
                     </div>
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <label class="input-group-text" style="width:95px;" for="inputGroupSelect01" onclick="getVoting();">Post</label>
+                        </div>
+                        <select class="custom-select" id="selectPerm">
+                        </select>
+                    <!--<div id="alert" class="alert alert-danger" role="alert" style="display:none;"></div>-->
+                    <button type="button" id="btn_check" class="btn btn-primary btn-lg btn-block" style="background-color:#205894; border-color:#205894; margin-top:10px;" onclick="getSteemData();">Check Now</button>
+                    </div>
+
                     <h5 class="card-title">Follower Result</h5>
                     <div id="result" class="alert alert-primary" role="alert">
                         <div style="height:200px; padding-top:80px;padding-bottom:80px;">
