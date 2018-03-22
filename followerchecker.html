@@ -73,7 +73,7 @@
                 
                 var text = "";
                 for(var i = 0; i < objectArray.length; i++){
-                    var item = "$" + objectArray[i].SBD.toFixed(2) + "    " + objectArray[i].PERCENT + "%      " + objectArray[i].ID;
+                    var item = "$" + objectArray[i].SBD.toFixed(3) + "    " + objectArray[i].PERCENT + "%      " + objectArray[i].ID;
                     text += '<option>' + item + '</option>';
                 }
                 $("#voting").html(text);
