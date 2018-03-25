@@ -25,8 +25,6 @@
                 steem.api.setOptions({url: 'https://api.steemit.com'});
                 getAccountCount();
                 loadSelectBox();
-                //getVoting();
-                //getSteemPower();
             };
             function loadSelectBox(){
                 username = $("#text_username").val();
@@ -37,11 +35,18 @@
                     var text = "";
                     for(var i = 0; i < result.length; i++){
                         if(result[i].author === username){
-                            text += '<option value="' + result[i].permlink+ '">' + result[i].permlink + '</option>';
+                            text += '<option value="' + result[i].permlink+ '">' + result[i].title + '</option>';
                         }
                     }
+
+                    if(result.length == 0) {
+                        $("#selectPerm").html("");
+                        $("#voting").html("");
+                        return;
+                    }
+
                     $("#selectPerm").html(text);
-                    $("#voting").html("");
+                    getVoting();
                 });
             }
             function getAccountCount(){
@@ -258,7 +263,7 @@
                         <div class="input-group-prepend">
                             <label class="input-group-text" style="width:95px;" for="inputGroupSelect01" onclick="getVoting();">Post</label>
                         </div>
-                        <select class="custom-select" id="selectPerm" onchange='$("#voting").html("");'>
+                        <select class="custom-select" id="selectPerm" onchange='getVoting();'>
                         </select>
                     <!--<div id="alert" class="alert alert-danger" role="alert" style="display:none;"></div>-->
                     <button type="button" id="btn_check" class="btn btn-primary btn-lg btn-block" style="background-color:#205894; border-color:#205894; margin-top:10px;" onclick="getSteemData();">Check Now</button>
