@@ -24,6 +24,7 @@
                 $("#past_sub").text("number of followers: " + previous_count);
                 steem.api.setOptions({url: 'https://api.steemit.com'});
                 getAccountCount();
+                getVotingPowerPercent();
                 loadSelectBox();
             };
             function loadSelectBox(){
@@ -38,23 +39,41 @@
                             text += '<option value="' + result[i].permlink+ '">' + result[i].title + '</option>';
                         }
                     }
-
                     if(result.length == 0) {
                         $("#selectPerm").html("");
                         $("#voting").html("");
                         return;
                     }
-
                     $("#selectPerm").html(text);
                     getVoting();
                 });
             }
             function getAccountCount(){
                 steem.api.getAccountCount(function(err, result) {
-                    $("#steemitUser").text(result);
+                    $("#steemitUser").text("").text(result);
                 });
             }
 
+            function getVotingPowerPercent(){
+                $("#timeLeft").text("");
+                $("#votingPowerP").text("");
+                let username = $("#text_username").val();
+                steem.api.getAccounts([username], function(err, response){
+                    if(response.length == 0) return;
+                    let secondsago = (new Date - new Date(response[0].last_vote_time + "Z")) / 1000;
+                    let vpow = response[0].voting_power + (10000 * secondsago / 432000);
+                    let secondsLeft = (10000 - vpow) * 432000 / 10000;
+                    vpow = Math.min(vpow / 100, 100).toFixed(2) + "%";
+                    $("#votingPowerP").text(vpow);
+                    if(secondsLeft > 0){
+                        let minutesLeft = ((secondsLeft % 3600) / 60).toFixed();
+                        let hoursLeft = Math.floor(secondsLeft / 3600);
+                        if(minutesLeft < 10) {minutesLeft = "0" + minutesLeft};
+                        let timeLeft = hoursLeft > 0 ? hoursLeft + ":" + minutesLeft : minutesLeft + "min";  
+                        $("#timeLeft").text(timeLeft);
+                    }
+                });
+            }
             // -----------------------------
             async function getSteemPower(ids){
                 var globalProperties = await steem.api.getDynamicGlobalPropertiesAsync();
@@ -62,7 +81,6 @@
                 var total_vesting_fund_steem = parseFloat(globalProperties.total_vesting_fund_steem.replace(" STEEM", ""));
             
                 console.log(total_vesting_shares + "  " + total_vesting_fund_steem);
-
                 var accounts = await steem.api.getAccountsAsync(ids);
                
                 var retObj = {};
@@ -73,7 +91,6 @@
                             "received_vesting_shares":item.received_vesting_shares.replace(" VESTS", ""),
                             "SP": sp};
                 })
-
                 return retObj;
             }
             // ---------------------------------------------------
@@ -86,11 +103,9 @@
                 console.log(fund);
                 var result = await steem.api.getActiveVotesAsync(username, link);
                 var objectArray = [];
-
                 var ids = result.map(function(item, index){
                     return item.voter;
                 })
-
                 var sparray = await getSteemPower(ids);
               
                 for(var i = 0; i < result.length; i++){
@@ -124,12 +139,17 @@
                     localStorage.clear();
                     $("#result").html(defaultHtml);
                     loadSelectBox();
+                    getVotingPowerPercent();
                 }
                 localStorage.setItem("username", username);
                 
                 const result = await steem.api.getFollowCountAsync(username);
                 console.log(result);
                 
+                if(result.follower_count == 0) {
+                    $("#btn_check").css("background-color", "#205894").text("Check Now").prop('disabled', false);
+                    return;
+                }
                 var allFollower = await getAllFollower(result.follower_count);
                 console.log("total: " + allFollower.length);
                 
@@ -244,8 +264,13 @@
         <!--<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>-->
 
         <div class="container" style="margin-top:5px">
-            <div id="steemitUser" style="text-align:right;" onclick="getAccountCount();"></div>
-            <div class="card text-center">
+            <div class="d-flex" style="font-size:small;">
+                <div class="mr-auto p-2" id="steemitUser" onclick="getAccountCount();"></div>
+                <div class="p-2" id="votingPowerP" onclick="getVotingPowerPercent();"></div>
+                <div class="p-2" id="timeLeft" onclick="getVotingPowerPercent();"></div>
+            </div>
+          
+           <div class="card text-center">
                 <div class="card-header">
                     Follower Change Checker
                 </div>
