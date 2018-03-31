@@ -24,6 +24,7 @@
                 $("#past_sub").text("number of followers: " + previous_count);
                 steem.api.setOptions({url: 'https://api.steemit.com'});
                 getAccountCount();
+                getSteemPrice();
                 getVotingPowerPercent();
                 loadSelectBox();
             };
@@ -50,8 +51,47 @@
             }
             function getAccountCount(){
                 steem.api.getAccountCount(function(err, result) {
-                    $("#steemitUser").text("").text(result);
+                    $("#steemitUser").text(result);
                 });
+            }
+
+            function getSteemPrice() {
+                steem.api.getCurrentMedianHistoryPrice(function(err, result) {
+                    let steemPrice = parseFloat(result.base.replace(" SBD"));
+                    $("#steemPrice").text("$" + steemPrice);
+                });
+            }
+
+            async function getFullPowerSBD() {
+                $("#userSP").text("");
+                $("#votingSBD").text("");
+                let username = $("#text_username").val();
+                let steemPrice = await steem.api.getCurrentMedianHistoryPriceAsync();
+                steemPrice = parseFloat(steemPrice.base.replace(" SBD"));
+
+                let accounts = await steem.api.getAccountsAsync([username]);
+                if(accounts.length == 0) {return;}
+                let item = accounts[0];
+                
+                // RSHARE
+                let globalProperties = await steem.api.getDynamicGlobalPropertiesAsync();
+                let total_vesting_shares = parseFloat(globalProperties.total_vesting_shares.replace(" VESTS", ""));
+                let total_vesting_fund_steem = parseFloat(globalProperties.total_vesting_fund_steem.replace(" STEEM", ""));
+                
+                let sumVestingShare = parseFloat(item.vesting_shares.replace(" VESTS", "")) + parseFloat(item.received_vesting_shares.replace(" VESTS", ""));
+                let sp = (sumVestingShare / total_vesting_shares * total_vesting_fund_steem);
+                let vp = item.voting_power + (10000 * ((new Date - new Date(item.last_vote_time + "Z")) / 1000) / 432000);
+                let votingWeight = 100;
+
+                let power = sp / (total_vesting_fund_steem / total_vesting_shares);
+                let voting = ((100 * vp * (100 * votingWeight) / 10000) + 49) / 50;
+                let rshare = power * voting;
+
+                let fund = await steem.api.getRewardFundAsync('post');
+                let sbd = rshare * (parseFloat(fund.reward_balance.replace(" STEEM","")) / fund.recent_claims) * steemPrice;
+                
+                $("#userSP").text(sp.toFixed(2) + " SP");
+                $("#votingSBD").text("$" + sbd.toFixed(2));
             }
 
             function getVotingPowerPercent(){
@@ -73,6 +113,7 @@
                         $("#timeLeft").text(timeLeft);
                     }
                 });
+                getFullPowerSBD();
             }
             // -----------------------------
             async function getSteemPower(ids){
@@ -263,9 +304,14 @@
         <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
         <!--<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>-->
 
-        <div class="container" style="margin-top:5px">
+        <div class="container">
             <div class="d-flex" style="font-size:small;">
-                <div class="mr-auto p-2" id="steemitUser" onclick="getAccountCount();"></div>
+                <div class="mr-auto p-2">
+                    <span class="p-2" id="steemitUser" onclick="getAccountCount();"></span>
+                    <span class="p-2" id="steemPrice"></span>
+                </div>
+                <div class="p-2" id="userSP" onclick="getVotingPowerPercent();"></div>
+                <div class="p-2" id="votingSBD" onclick="getVotingPowerPercent();"></div>
                 <div class="p-2" id="votingPowerP" onclick="getVotingPowerPercent();"></div>
                 <div class="p-2" id="timeLeft" onclick="getVotingPowerPercent();"></div>
             </div>
