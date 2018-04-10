@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+        <script src="https://github.com/steemit/steem-js/releases/download/v0.6.4/steem.min.js"></script> 
+        <title>Follower Checker</title>
+
+        <script>
+            var username;
+            var storage_username;
+            var defaultHtml = '<div style="height:150px; padding-top:55px;padding-bottom:55px;"><button type="button" class="btn btn-success" style="margin:3px;">followers: 0</button><button type="button" class="btn btn-warning" style="margin:3px;">unfollowers: 0</button></div>';
+           
+            window.onload = function() {
+                storage_username = localStorage.getItem("username");
+                var previous_count = localStorage.getItem("follower_count");
+                previous_count = previous_count === null ? 0 : previous_count;
+                $("#text_username").val(storage_username);
+                $("#past_sub").text("number of followers: " + previous_count);
+                steem.api.setOptions({url: 'https://api.steemit.com'});
+                //steem.api.setOptions({url: 'https://gtg.steem.house'});
+                
+                getAccountVotes('supergiant', 'ribai');
+                //getLatestBlock();
+
+            };
+           
+            async function getAccountVotes(username1, username2){
+                var steemPrice = await steem.api.getCurrentMedianHistoryPriceAsync();
+                steemPrice = parseFloat(steemPrice.base.replace(" SBD"));
+                var fund = await steem.api.getRewardFundAsync('post');
+
+                let result1 = await steem.api.getAccountVotesAsync(username1);
+                let result2 = await steem.api.getAccountVotesAsync(username2);
+                console.log(result1);
+                console.log(result2);
+                let new_result1 = [];
+                let new_result2 = [];
+                let user1_rshare = 0;
+                let user2_rshare = 0;
+                // 1. 사람으로 발라낸다
+                for(let i = 0; i < result1.length; i++){
+                    if(result1[i].authorperm.startsWith(username2)){
+                        new_result1.push(result1[i]);
+                        user1_rshare += parseFloat(result1[i].rshares);
+                    }
+                }
+                for(let i = 0; i < result2.length; i++){
+                    if(result2[i].authorperm.startsWith(username1)){
+                        new_result2.push(result2[i]);
+                        user2_rshare += parseFloat(result2[i].rshares);
+                    }
+                }
+
+                var sbd1 = steemPrice * user1_rshare * (parseFloat(fund.reward_balance.replace(" STEEM","")) /fund.recent_claims);
+                var sbd2 = steemPrice * user2_rshare * (parseFloat(fund.reward_balance.replace(" STEEM","")) /fund.recent_claims);
+
+                // 2. 날짜로 발라낸다
+                console.log(new_result1);
+                console.log(new_result2);
+
+                // 기간별 총 보팅수
+                console.log(username1 + ":" + new_result1.length +  " votes, " + username2 + ":" + new_result2.length + " votes");
+                // 기간별 총 보팅액
+                console.log(username1 + ":$" + sbd1.toFixed(3) +  ", " + username2 + ":$" + sbd2.toFixed(3));
+
+
+                
+                // 자르기
+            }
+
+            async function getLatestBlock(){
+                var result = await steem.api.getDynamicGlobalPropertiesAsync()
+                $("#currentBlock").text(result.head_block_number);
+                $("#currentBlockTime").text(result.time);
+            }
+
+        </script>
+    </head>
+    <body>
+        <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+        <!--<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>-->
+
+        <div class="container">
+            <div class="d-flex" style="font-size:small;">
+                <div class="mr-auto p-2">
+                    <span class="p-2" id="steemitUser" onclick="getAccountCount();"></span>
+                    <span class="" id="steemPrice"></span>
+                </div>
+                <div class="p-2" onclick="getLatestBlock();">
+                    <span class="p-2" id="currentBlock"></span>
+                    <span id="currentBlockTime"></span>
+                    <span class="p-2" id="votingPowerP"></span>
+                    <span id="timeLeft"></span>
+                </div>
+            </div>
+          
+           <div class="card text-center">
+                <div class="card-header">
+                    Follower Change Checker
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">Make sure your friends have increased or decreased</h5>
+                    <p id="past_sub"  class="card-text">number of followers</p>
+
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" onclick='getVoting("SBD");'>Username</span>
+                        </div> 
+                        <input type="text" id="text_username" class="form-control" placeholder="Username" aria-label="Username" aria-describedby="basic-addon1">
+                    </div>
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <label class="input-group-text" style="width:95px;" for="inputGroupSelect01" onclick='getVoting("TIME");'>Post</label>
+                        </div>
+                        <select class="custom-select" id="selectPerm" onchange='getVoting("SBD");'>
+                        </select>
+                    <button type="button" id="btn_check" class="btn btn-primary btn-lg btn-block" style="background-color:#205894; border-color:#205894; margin-top:10px;" onclick="getAccountVotes();">Check Now</button>
+                    </div>
+
+                    <h5 class="card-title">Follower Result</h5>
+                    <div id="result" class="alert alert-primary" role="alert">
+                        <div style="height:150px; padding-top:55px;padding-bottom:55px;">
+                            <button type="button" class="btn btn-success">followers</button>
+                            <button type="button" class="btn btn-warning">unfollowers</button>
+                        </div>
+                    </div>
+                    <select class="custom-select" id="votingList">
+                    </select>  
+                </div>                    
+                <div class="card-footer text-muted">
+                    follower checker by <a style="margin:3px;" href="https://steemit.com/@supergiant" target="_blank">@supergiant</a>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
