@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+        <script src="https://github.com/steemit/steem-js/releases/download/v0.6.4/steem.min.js"></script> 
+        <script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/echarts.min.js"></script>
+
+        <title>Relationship Checker</title>
+
+        <script>
+            let username;
+            let storage_username1, storage_username2;
+            let arrVote1, arrVote2, arrSbd1, arrSbd2;
+            let chartVote1, chartVote2;
+
+            window.onload = function() {
+                storage_username1 = localStorage.getItem("username_vote1");
+                $("#text_username1").val(storage_username1);
+
+                storage_username2 = localStorage.getItem("username_vote2");
+                $("#text_username2").val(storage_username2);
+                steem.api.setOptions({url: 'https://api.steemit.com'});
+            };
+
+            function resize(){
+                if(chartVote1 === undefined){return;}
+                chartVote1.resize();
+                chartVote2.resize();
+            }
+           
+            async function getAccountVotes(){
+                let username1 = $("#text_username1").val();
+                let username2 = $("#text_username2").val();
+
+                if(username1 === "" || username2 === ""){
+                    return;
+                }
+
+                $("#btn_check").css("background-color", "#256873").text("Loading...").prop('disabled', true);
+
+                localStorage.setItem("username_vote1", username1);
+                localStorage.setItem("username_vote2", username2);
+
+                var steemPrice = await steem.api.getCurrentMedianHistoryPriceAsync();
+                steemPrice = parseFloat(steemPrice.base.replace(" SBD"));
+                var fund = await steem.api.getRewardFundAsync('post');
+
+                let result1 = await steem.api.getAccountVotesAsync(username1);
+                let result2 = await steem.api.getAccountVotesAsync(username2);
+                //console.log(result1);
+                //console.log(result2);
+                let new_result1 = [];
+                let new_result2 = [];
+                let user1_rshare = 0;
+                let user2_rshare = 0;
+
+                for(let i = 0; i < result1.length; i++){
+                    if(result1[i].authorperm.startsWith(username2)){
+                        new_result1.push(result1[i]);
+                        user1_rshare += parseFloat(result1[i].rshares);
+                    }
+                }
+                for(let i = 0; i < result2.length; i++){
+                    if(result2[i].authorperm.startsWith(username1)){
+                        new_result2.push(result2[i]);
+                        user2_rshare += parseFloat(result2[i].rshares);
+                    }
+                }
+
+                let sbd1 = steemPrice * user1_rshare * (parseFloat(fund.reward_balance.replace(" STEEM","")) /fund.recent_claims);
+                let sbd2 = steemPrice * user2_rshare * (parseFloat(fund.reward_balance.replace(" STEEM","")) /fund.recent_claims);
+
+                let day1, day3, day7, day15, day30, today = new Date();
+                day1  = day3 = day7 = day15 = day30 = today;
+                day1  = day1.setDate(today.getDate() - 1);
+                day3  = day3.setDate(today.getDate() - 3);
+                day7  = day7.setDate(today.getDate() - 7);
+                day15 = day15.setDate(today.getDate() - 15);
+                day30 = day30.setDate(today.getDate() - 30);
+
+                arrVote1 = [0, 0, 0, 0, 0];
+                arrVote2 = [0, 0, 0, 0, 0];
+                arrSbd1 = [0, 0, 0, 0, 0];
+                arrSbd2 = [0, 0, 0, 0, 0];
+
+                for(let i = 0; i < new_result1.length; i++){
+                    let date = new Date(new_result1[i].time + ".000Z");
+                    let timeLong = date.getTime();
+                    let rShares = parseFloat(new_result1[i].rshares);
+                    if(day1 <= timeLong){
+                        arrVote1[0] += 1;
+                        arrSbd1[0] += rShares;
+                    }
+                    if(day3 <= timeLong){
+                        arrVote1[1] += 1;
+                        arrSbd1[1] += rShares;
+                    }
+                    if(day7 <= timeLong){
+                        arrVote1[2] += 1;
+                        arrSbd1[2] += rShares;
+                    }
+                    if(day15 <= timeLong){
+                        arrVote1[3] += 1;
+                        arrSbd1[3] += rShares;
+                    }
+                    if(day30 <= timeLong){
+                        arrVote1[4] += 1;
+                        arrSbd1[4] += rShares;
+                    }
+                }
+
+                for(let i = 0; i < new_result2.length; i++){
+                    let date = new Date(new_result2[i].time + ".000Z");
+                    let timeLong = date.getTime();
+                    let rShares = parseFloat(new_result2[i].rshares);
+
+                    if(day1 <= timeLong){
+                        arrVote2[0] += 1;
+                        arrSbd2[0] += rShares;
+                    }
+                    if(day3 <= timeLong){
+                        arrVote2[1] += 1;
+                        arrSbd2[1] += rShares;
+                    }
+                    if(day7 <= timeLong){
+                        arrVote2[2] += 1;
+                        arrSbd2[2] += rShares;
+                    }
+                    if(day15 <= timeLong){
+                        arrVote2[3] += 1;
+                        arrSbd2[3] += rShares;
+                    }
+                    if(day30 <= timeLong){
+                        arrVote2[4] += 1;
+                        arrSbd2[4] += rShares;
+                    }
+                }
+                
+                for(let i = 0; i < arrSbd1.length; i++) {
+                    arrSbd1[i] = (steemPrice * arrSbd1[i] * (parseFloat(fund.reward_balance.replace(" STEEM","")) /fund.recent_claims)).toFixed(3);
+                    arrSbd2[i] = (steemPrice * arrSbd2[i] * (parseFloat(fund.reward_balance.replace(" STEEM","")) /fund.recent_claims)).toFixed(3);
+                }
+
+                $("#container").show();
+                initChart1(username1 + ": " + new_result1.length +  " votes, " + username2 + ": " + new_result2.length + " votes");
+                initChart2(username1 + ": $" + sbd1.toFixed(3) +  ", " + username2 + ": $" + sbd2.toFixed(3));
+
+
+                $("#btn_check").css("background-color", "#205894").text("Check Now").prop('disabled', false);
+                //console.log(new_result1);
+                //console.log(new_result2);
+            }
+
+            function initChart1(subText) {
+                var dom = document.getElementById("container_vote");
+                chartVote1 = echarts.init(dom);
+                var app = {};
+                option = null;
+
+                option = {
+                    title: {
+                        text: 'VOTES',
+                        subtext: 'subtext'
+                    },
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: {
+                            type: 'shadow'
+                        }
+                    },
+                    legend: {
+                        data: ['userA', 'userB']
+                    },
+                    grid: {
+                        left: '3%',
+                        right: '4%',
+                        bottom: '3%',
+                        containLabel: true
+                    },
+                    xAxis: {
+                        type: 'value',
+                        boundaryGap: [0, 0.01]
+                    },
+                    yAxis: {
+                        type: 'category',
+                        data: ['1d','3d','7d','15d','30d']
+                    },
+                    series: [
+                        {
+                            name: 'userA',
+                            type: 'bar',
+                            label: {
+                                normal: {
+                                    show: true,
+                                    position: 'inside',
+                                }
+                            }, 
+                            data: [0, 0, 0, 0, 0]
+                        },
+                        {
+                            name: 'userB',
+                            type: 'bar',
+                            label: {
+                                normal: {
+                                    show: true,
+                                    position: 'inside'
+                                }
+                            },
+                            data: [0, 0, 0, 0, 0]
+                        }
+                    ]
+                };
+
+                let username1 = $("#text_username1").val();
+                let username2 = $("#text_username2").val();
+
+                option.title.subtext = subText;
+                option.legend.data = [username1, username2];
+                option.series[0].name = username1;
+                option.series[1].name = username2;
+                option.series[0].data = arrVote1;
+                option.series[1].data = arrVote2;
+
+                if (option && typeof option === "object") {
+                    chartVote1.setOption(option, true);
+                }
+            }
+
+            function initChart2(subText) {
+                var dom = document.getElementById("container_sbd");
+                chartVote2 = echarts.init(dom);
+                var app = {};
+                option = null;
+
+                option = {
+                    title: {
+                        text: 'SBD',
+                        subtext: 'subtext'
+                    },
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: {
+                            type: 'shadow'
+                        }
+                    },
+                    legend: {
+                        data: ['userA', 'userB']
+                    },
+                    grid: {
+                        left: '3%',
+                        right: '4%',
+                        bottom: '3%',
+                        containLabel: true
+                    },
+                    xAxis: {
+                        type: 'value',
+                        boundaryGap: [0, 0.01]
+                    },
+                    yAxis: {
+                        type: 'category',
+                        data: ['1d','3d','7d','15d','30d']
+                    },
+                    series: [
+                        {
+                            name: 'userA',
+                            type: 'bar',
+                            label: {
+                                normal: {
+                                    show: true,
+                                    position: 'right',
+                                }
+                            }, 
+                            data: [0, 0, 0, 0, 0]
+                        },
+                        {
+                            name: 'userB',
+                            type: 'bar',
+                            label: {
+                                normal: {
+                                    show: true,
+                                    position: 'right'
+                                }
+                            },
+                            data: [0, 0, 0, 0, 0]
+                        }
+                    ]
+                };
+
+                let username1 = $("#text_username1").val();
+                let username2 = $("#text_username2").val();
+
+                option.title.subtext = subText;
+                option.legend.data = [username1, username2];
+                option.series[0].name = username1;
+                option.series[1].name = username2;
+                option.series[0].data = arrSbd1;
+                option.series[1].data = arrSbd2;
+
+                if (option && typeof option === "object") {
+                    chartVote2.setOption(option, true);
+                }
+            }
+
+        </script>
+    </head>
+    <body onresize="resize();">
+        <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+        <div class="container" style="margin-top:10px">
+           <div class="card text-center">
+                <div class="card-header">
+                    Relationship Checker
+                </div>
+                <div class="card-body">
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">Username1</span>
+                        </div> 
+                        <input type="text" id="text_username1" class="form-control" placeholder="Username" aria-label="Username" aria-describedby="basic-addon1">
+                    </div>
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <label class="input-group-text">Username2</label>
+                        </div>
+                        <input type="text" id="text_username2" class="form-control" placeholder="Username" aria-label="Username" aria-describedby="basic-addon1">
+                    <button type="button" id="btn_check" class="btn btn-primary btn-lg btn-block" style="background-color:#205894; border-color:#205894; margin-top:10px;" onclick="getAccountVotes();">Check Now</button>
+                    </div>
+
+                    <div id="container" style="display:none;">
+                        <div class="alert alert-primary">
+                            <div id="container_vote" style="height: 400px;"></div>
+                        </div>
+                        <div class="alert alert-primary">
+                            <div id="container_sbd" style="height: 400px;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer text-muted">
+                    relationship checker by <a style="margin:3px;" href="https://steemit.com/@supergiant" target="_blank">@supergiant</a>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
