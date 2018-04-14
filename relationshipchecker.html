@@ -42,6 +42,8 @@
                 }
 
                 $("#btn_check").css("background-color", "#256873").text("Loading...").prop('disabled', true);
+                if(chartVote1 !== undefined) {chartVote1.showLoading(); }
+                if(chartVote2 !== undefined) {chartVote2.showLoading(); }
 
                 localStorage.setItem("username_vote1", username1);
                 localStorage.setItem("username_vote2", username2);
@@ -152,6 +154,8 @@
 
 
                 $("#btn_check").css("background-color", "#205894").text("Check Now").prop('disabled', false);
+                chartVote1.hideLoading();
+                chartVote2.hideLoading();
                 //console.log(new_result1);
                 //console.log(new_result2);
             }
