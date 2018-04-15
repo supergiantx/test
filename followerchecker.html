@@ -12,13 +12,13 @@
         <title>Follower Checker</title>
 
         <script>
-            var username;
-            var storage_username;
-            var defaultHtml = '<div style="height:150px; padding-top:55px;padding-bottom:55px;"><button type="button" class="btn btn-success" style="margin:3px;">followers: 0</button><button type="button" class="btn btn-warning" style="margin:3px;">unfollowers: 0</button></div>';
+            let username;
+            let storage_username;
+            let defaultHtml = '<div style="height:150px; padding-top:55px;padding-bottom:55px;"><button type="button" class="btn btn-success" style="margin:3px;">followers: 0</button><button type="button" class="btn btn-warning" style="margin:3px;">unfollowers: 0</button></div>';
            
             window.onload = function() {
                 storage_username = localStorage.getItem("username");
-                var previous_count = localStorage.getItem("follower_count");
+                let previous_count = localStorage.getItem("follower_count");
                 previous_count = previous_count === null ? 0 : previous_count;
                 $("#text_username").val(storage_username);
                 $("#past_sub").text("number of followers: " + previous_count);
@@ -34,8 +34,8 @@
                     return;
                 }
                 steem.api.getDiscussionsByBlog({tag: username, limit: 20}, function(err, result) {
-                    var text = "";
-                    for(var i = 0; i < result.length; i++){
+                    let text = "";
+                    for(let i = 0; i < result.length; i++){
                         if(result[i].author === username){
                             text += '<option value="' + result[i].permlink+ '">' + result[i].title + '</option>';
                         }
@@ -109,19 +109,19 @@
                 });
                 getFullPowerSBD();
             }
-            // -----------------------------
+
             async function getSteemPower(ids){
-                var globalProperties = await steem.api.getDynamicGlobalPropertiesAsync();
-                var total_vesting_shares = parseFloat(globalProperties.total_vesting_shares.replace(" VESTS", ""));
-                var total_vesting_fund_steem = parseFloat(globalProperties.total_vesting_fund_steem.replace(" STEEM", ""));
+                let globalProperties = await steem.api.getDynamicGlobalPropertiesAsync();
+                let total_vesting_shares = parseFloat(globalProperties.total_vesting_shares.replace(" VESTS", ""));
+                let total_vesting_fund_steem = parseFloat(globalProperties.total_vesting_fund_steem.replace(" STEEM", ""));
             
                 console.log(total_vesting_shares + "  " + total_vesting_fund_steem);
-                var accounts = await steem.api.getAccountsAsync(ids);
+                let accounts = await steem.api.getAccountsAsync(ids);
                
-                var retObj = {};
+                let retObj = {};
                 accounts.map(function(item, index){
-                    var sumVestingShare = parseFloat(item.vesting_shares.replace(" VESTS", "")) + parseFloat(item.received_vesting_shares.replace(" VESTS", "") - parseFloat(item.delegated_vesting_shares.replace(" VESTS", "")));
-                    var sp = (sumVestingShare / total_vesting_shares * total_vesting_fund_steem).toFixed(0);
+                    let sumVestingShare = parseFloat(item.vesting_shares.replace(" VESTS", "")) + parseFloat(item.received_vesting_shares.replace(" VESTS", "") - parseFloat(item.delegated_vesting_shares.replace(" VESTS", "")));
+                    let sp = (sumVestingShare / total_vesting_shares * total_vesting_fund_steem).toFixed(0);
                     retObj[item.name] = {"vesting_shares": item.vesting_shares.replace(" VESTS", ""), 
                             "received_vesting_shares":item.received_vesting_shares.replace(" VESTS", ""),
                             "delegated_vesting_shares":item.delegated_vesting_shares.replace(" VESTS", ""),
@@ -129,33 +129,33 @@
                 })
                 return retObj;
             }
-            // ---------------------------------------------------
+
             async function getVoting(orderby){
-                var link = $("#selectPerm").val();
+                let link = $("#selectPerm").val();
                 username = $("#text_username").val();
-                var steemPrice = await steem.api.getCurrentMedianHistoryPriceAsync();
+                let steemPrice = await steem.api.getCurrentMedianHistoryPriceAsync();
                 steemPrice = parseFloat(steemPrice.base.replace(" SBD"));
-                var fund = await steem.api.getRewardFundAsync('post');
+                let fund = await steem.api.getRewardFundAsync('post');
                 console.log(fund);
-                var result = await steem.api.getActiveVotesAsync(username, link);
-                var objectArray = [];
-                var ids = result.map(function(item, index){
+                let result = await steem.api.getActiveVotesAsync(username, link);
+                let objectArray = [];
+                let ids = result.map(function(item, index){
                     return item.voter;
                 })
-                var sparray = await getSteemPower(ids);
+                let sparray = await getSteemPower(ids);
               
-                for(var i = 0; i < result.length; i++){
-                    var id = result[i].voter;
-                    var sbd = steemPrice * result[i].rshares * (parseFloat(fund.reward_balance.replace(" STEEM","")) /fund.recent_claims);
-                    var percent = result[i].percent / 100;
-                    var time = new Date(result[i].time).getTime();
+                for(let i = 0; i < result.length; i++){
+                    let id = result[i].voter;
+                    let sbd = steemPrice * result[i].rshares * (parseFloat(fund.reward_balance.replace(" STEEM","")) /fund.recent_claims);
+                    let percent = result[i].percent / 100;
+                    let time = new Date(result[i].time).getTime();
                     objectArray.push({ID:id, SBD: sbd, PERCENT: percent, SP: sparray[id].SP, TIME:time});
                 }
                 sortByKey(objectArray, orderby);
                 
-                var text = "";
-                for(var i = 0; i < objectArray.length; i++){
-                    var item = "$" + objectArray[i].SBD.toFixed(3) + "    " + objectArray[i].PERCENT + "%      " + objectArray[i].ID + " (" + objectArray[i].SP + ")";
+                let text = "";
+                for(let i = 0; i < objectArray.length; i++){
+                    let item = "$" + objectArray[i].SBD.toFixed(3) + "    " + objectArray[i].PERCENT + "%      " + objectArray[i].ID + " (" + objectArray[i].SP + ")";
                     text += '<option>' + item + '</option>';
                 }
                 $("#votingList").html(text);
@@ -172,7 +172,10 @@
                
                 storage_username = localStorage.getItem("username");
                 if(storage_username !==  username){
-                    localStorage.clear();
+                    localStorage.removeItem("username");
+                    localStorage.removeItem("follower_count");
+                    localStorage.removeItem("follower_list");
+
                     $("#result").html(defaultHtml);
                     loadSelectBox();
                     getVotingPowerPercent();
@@ -186,10 +189,10 @@
                     $("#btn_check").css("background-color", "#205894").text("Check Now").prop('disabled', false);
                     return;
                 }
-                var allFollower = await getAllFollower(result.follower_count);
+                let allFollower = await getAllFollower(result.follower_count);
                 console.log("total: " + allFollower.length);
                 
-                var previous_follower_count = localStorage.getItem("follower_count");
+                let previous_follower_count = localStorage.getItem("follower_count");
                 if(previous_follower_count === null){
                     $("#past_sub").text("number of followers: " + allFollower.length + " (↗0 ↘0)");
                 }else{
@@ -201,20 +204,20 @@
                 $("#btn_check").css("background-color", "#205894").text("Check Now").prop('disabled', false);
             }
             async function getAllFollowing(total_count) {
-                var retArray = [];
-                var current_count = 0;
-                var startFollowing = "";
+                let retArray = [];
+                let current_count = 0;
+                let startFollowing = "";
                 while(true) {
-                    var options = {follower: 'supergiant', startFollowing: startFollowing, followType: 'blog', limit: 100}
-                    var result = await steem.api.getFollowingWithAsync(options);
-                    var followingNum = result.length;
+                    let options = {follower: 'supergiant', startFollowing: startFollowing, followType: 'blog', limit: 100}
+                    let result = await steem.api.getFollowingWithAsync(options);
+                    let followingNum = result.length;
                     startFollowing = result[followingNum - 1].following;
                     
                     if(followingNum > 99){
                         result.pop();
                         followingNum--;
                     }
-                    var array = result.map(function(item, index){
+                    let array = result.map(function(item, index){
                         return item.following;
                     })
                     
@@ -232,20 +235,20 @@
                 return retArray;
             }
             async function getAllFollower(total_count) {
-                var retArray = [];
-                var current_count = 0;
-                var startFollower = "";
+                let retArray = [];
+                let current_count = 0;
+                let startFollower = "";
                 while(true) {
-                    var options = {following: username, startFollower: startFollower, followType: 'blog', limit: 1000}
-                    var result = await steem.api.getFollowersWithAsync(options);
-                    var followerNum = result.length;
+                    let options = {following: username, startFollower: startFollower, followType: 'blog', limit: 1000}
+                    let result = await steem.api.getFollowersWithAsync(options);
+                    let followerNum = result.length;
                     startFollower = result[followerNum - 1].follower;
                     
                     if(followerNum > 999){
                         result.pop();
                         followerNum--;
                     }
-                    var array = result.map(function(item, index){
+                    let array = result.map(function(item, index){
                         return item.follower;
                     })
                     
@@ -263,25 +266,25 @@
                 return retArray;
             }
             function displayResult(followers, followings){    
-                var previous_follower_array = JSON.parse(localStorage.getItem("follower_list"));
-                var new_follower_array = [];
-                for(var i = 0; i < followers.length; i ++){
-                    var index = previous_follower_array.indexOf(followers[i]);
+                let previous_follower_array = JSON.parse(localStorage.getItem("follower_list"));
+                let new_follower_array = [];
+                for(let i = 0; i < followers.length; i ++){
+                    let index = previous_follower_array.indexOf(followers[i]);
                     if(index === -1){
                         new_follower_array.push(followers[i]);
                     }else{
                         previous_follower_array.splice(index,1);
                     }
                 }
-                var resultHtml = "";
-                for(var i = 0; i < new_follower_array.length; i++){
-                    var text = followings.indexOf(new_follower_array[i]) === -1 ? new_follower_array[i] : new_follower_array[i] + " *";
-                    var link = '<a class="btn btn-success" style="margin:3px;" href="https://steemit.com/@' + new_follower_array[i] + '" role="button" target="_blank">' + text + '</a>';
+                let resultHtml = "";
+                for(let i = 0; i < new_follower_array.length; i++){
+                    let text = followings.indexOf(new_follower_array[i]) === -1 ? new_follower_array[i] : new_follower_array[i] + " *";
+                    let link = '<a class="btn btn-success" style="margin:3px;" href="https://steemit.com/@' + new_follower_array[i] + '" role="button" target="_blank">' + text + '</a>';
                     resultHtml += link;
                 }
-                for(var i = 0; i < previous_follower_array.length; i++){
-                    var text = followings.indexOf(previous_follower_array[i]) === -1 ? previous_follower_array[i] : previous_follower_array[i] + " *";
-                    var link = '<a class="btn btn-warning" style="margin:3px;" href="https://steemit.com/@' + previous_follower_array[i] + '" role="button" target="_blank">' + text + '</a>';
+                for(let i = 0; i < previous_follower_array.length; i++){
+                    let text = followings.indexOf(previous_follower_array[i]) === -1 ? previous_follower_array[i] : previous_follower_array[i] + " *";
+                    let link = '<a class="btn btn-warning" style="margin:3px;" href="https://steemit.com/@' + previous_follower_array[i] + '" role="button" target="_blank">' + text + '</a>';
                     resultHtml += link;
                 }
                 if(new_follower_array.length == 0 && previous_follower_array.length == 0){
