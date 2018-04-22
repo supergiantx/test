@@ -157,6 +157,7 @@
                 sortByKey(objectArray, orderby);
                 
                 let text = "";
+                let text2 = "";
                 for(let i = 0; i < objectArray.length; i++){
                     let item = "$" + objectArray[i].SBD.toFixed(3) + "    " + objectArray[i].PERCENT + "%      " + objectArray[i].ID + " (" + objectArray[i].SP + ")";
                     if(replies.includes(objectArray[i].ID)){
@@ -165,7 +166,10 @@
                         text += '<option value="' + objectArray[i].ID + '">' + item + '</option>';
                     }
                     
+                    text2 += '<button class="dropdown-item" type="button">' + item + '</button>';
+                    
                 }
+                $("#dropdownList").html(text);
                 $("#votingList").html(text);
             }
             function sortByKey(array, key) {
@@ -304,7 +308,11 @@
                 console.log("Recent followers: " + new_follower_array.length + " Recent unfollowers: "  + previous_follower_array.length);
             }
             function moveToPost(){
-                let href="https://steemit.com/@" + $("#votingList").val();
+                let username = $("#votingList").val();
+                if(username === null) {
+                    return;
+                }
+                let href="https://steemit.com/@" + username;
                 window.open(href, "_blank");
             }
     
@@ -312,7 +320,8 @@
     </head>
     <body>
         <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-        <!--<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>-->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 
         <div class="container">
             <div class="d-flex" style="font-size:small;">
@@ -365,7 +374,25 @@
                             <button type="button" class="btn btn-outline-secondary" onclick="moveToPost();">Go!</button>
                         </div>
                     </div> 
+
+                    <div class="input-group mb-3">
+                    
+                            <button class="custom-select" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="false" aria-expanded="false">
+                                Dropdown
+                            </button>
+                            <div id="dropdownList" class="dropdown-menu" aria-labelledby="dropdownMenu2" style="overflow:scroll; height:400px;">
+                                <button class="dropdown-item" type="button">Action</button>
+                                <button class="dropdown-item" type="button">Another action</button>
+                                <button class="dropdown-item" type="button">Something else here</button>
+                            </div>
+                            <div class="input-group-append">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="moveToPost();">Go!</button>
+                                </div>
+                    </div>
+
+                    
                 </div>
+
                 <div class="card-footer text-muted">
                     follower checker by <a style="margin:3px;" href="https://steemit.com/@supergiant" target="_blank">@supergiant</a>
                 </div>
