@@ -42,7 +42,8 @@
                     }
                     if(result.length == 0) {
                         $("#selectPerm").html("");
-                        $("#votingList").html("");
+                        $("#votingListButton").text("");
+                        $("#votingListButton").val("");
                         return;
                     }
                     $("#selectPerm").html(text);
@@ -157,21 +158,29 @@
                 sortByKey(objectArray, orderby);
                 
                 let text = "";
-                let text2 = "";
-                for(let i = 0; i < objectArray.length; i++){
+                for(let i = 0; i < objectArray.length; i++){                    
                     let item = "$" + objectArray[i].SBD.toFixed(3) + "    " + objectArray[i].PERCENT + "%      " + objectArray[i].ID + " (" + objectArray[i].SP + ")";
                     if(replies.includes(objectArray[i].ID)){
-                        text += '<option value="' + objectArray[i].ID + '" style="background-color:#d1ffdb;">' + item + '</option>';
+                        text += '<button class="dropdown-item" type="button" value="' + objectArray[i].ID + '" onclick="selectChanged(this);" style="background-color:#d1ffdb;">' + item + '</button>';
                     }else{
-                        text += '<option value="' + objectArray[i].ID + '">' + item + '</option>';
+                        text += '<button class="dropdown-item" type="button" value="' + objectArray[i].ID + '" onclick="selectChanged(this);">' + item + '</button>';
                     }
                     
-                    text2 += '<button class="dropdown-item" type="button">' + item + '</button>';
+                    if(i === 0){
+                        $("#votingListButton").text(item);
+                        $("#votingListButton").val(objectArray[i].ID);
+                    }
                     
                 }
                 $("#dropdownList").html(text);
-                $("#votingList").html(text);
             }
+            
+            function selectChanged(obj){
+                $("#votingListButton").text($(obj).text());
+                $("#votingListButton").val($(obj).val());
+
+            }
+
             function sortByKey(array, key) {
                  return array.sort(function(a,b) { return b[key] - a[key];});
             }
@@ -308,7 +317,7 @@
                 console.log("Recent followers: " + new_follower_array.length + " Recent unfollowers: "  + previous_follower_array.length);
             }
             function moveToPost(){
-                let username = $("#votingList").val();
+                let username = $("#votingListButton").val();
                 if(username === null) {
                     return;
                 }
@@ -367,30 +376,14 @@
                             <button type="button" class="btn btn-warning">unfollowers</button>
                         </div>
                     </div>
+
                     <div class="input-group mb-3">
-                        <select class="custom-select" id="votingList">
-                        </select> 
+                        <button class="custom-select" style="text-align:left;" type="button" id="votingListButton" data-toggle="dropdown" aria-haspopup="false" aria-expanded="false"></button>
+                        <div id="dropdownList" class="dropdown-menu" aria-labelledby="votingListButton" style="overflow:scroll; height:35em; width:90%"></div>
                         <div class="input-group-append">
                             <button type="button" class="btn btn-outline-secondary" onclick="moveToPost();">Go!</button>
                         </div>
-                    </div> 
-
-                    <div class="input-group mb-3">
-                    
-                            <button class="custom-select" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="false" aria-expanded="false">
-                                Dropdown
-                            </button>
-                            <div id="dropdownList" class="dropdown-menu" aria-labelledby="dropdownMenu2" style="overflow:scroll; height:400px;">
-                                <button class="dropdown-item" type="button">Action</button>
-                                <button class="dropdown-item" type="button">Another action</button>
-                                <button class="dropdown-item" type="button">Something else here</button>
-                            </div>
-                            <div class="input-group-append">
-                                    <button type="button" class="btn btn-outline-secondary" onclick="moveToPost();">Go!</button>
-                                </div>
                     </div>
-
-                    
                 </div>
 
                 <div class="card-footer text-muted">
