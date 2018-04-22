@@ -136,7 +136,10 @@
                 let steemPrice = await steem.api.getCurrentMedianHistoryPriceAsync();
                 steemPrice = parseFloat(steemPrice.base.replace(" SBD"));
                 let fund = await steem.api.getRewardFundAsync('post');
-                console.log(fund);
+                let replies = await steem.api.getContentRepliesWithAsync({author:username, permlink:link});
+                replies = replies.map(function(item, index){
+                        return item.author;
+                });
                 let result = await steem.api.getActiveVotesAsync(username, link);
                 let objectArray = [];
                 let ids = result.map(function(item, index){
@@ -156,7 +159,12 @@
                 let text = "";
                 for(let i = 0; i < objectArray.length; i++){
                     let item = "$" + objectArray[i].SBD.toFixed(3) + "    " + objectArray[i].PERCENT + "%      " + objectArray[i].ID + " (" + objectArray[i].SP + ")";
-                    text += '<option>' + item + '</option>';
+                    if(replies.includes(objectArray[i].ID)){
+                        text += '<option value="' + objectArray[i].ID + '" style="background-color:#d1ffdb;">' + item + '</option>';
+                    }else{
+                        text += '<option value="' + objectArray[i].ID + '">' + item + '</option>';
+                    }
+                    
                 }
                 $("#votingList").html(text);
             }
@@ -295,6 +303,10 @@
                 $("#past_sub").text("number of followers: " + followers.length + "  (↗" + new_follower_array.length + "  ↘" + previous_follower_array.length + ")");
                 console.log("Recent followers: " + new_follower_array.length + " Recent unfollowers: "  + previous_follower_array.length);
             }
+            function moveToPost(){
+                let href="https://steemit.com/@" + $("#votingList").val();
+                window.open(href, "_blank");
+            }
     
         </script>
     </head>
@@ -346,9 +358,14 @@
                             <button type="button" class="btn btn-warning">unfollowers</button>
                         </div>
                     </div>
-                    <select class="custom-select" id="votingList">
-                    </select>  
-                </div>                    
+                    <div class="input-group mb-3">
+                        <select class="custom-select" id="votingList">
+                        </select> 
+                        <div class="input-group-append">
+                            <button type="button" class="btn btn-outline-secondary" onclick="moveToPost();">Go!</button>
+                        </div>
+                    </div> 
+                </div>
                 <div class="card-footer text-muted">
                     follower checker by <a style="margin:3px;" href="https://steemit.com/@supergiant" target="_blank">@supergiant</a>
                 </div>
