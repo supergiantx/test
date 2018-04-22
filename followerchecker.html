@@ -317,6 +317,15 @@
                 console.log("Recent followers: " + new_follower_array.length + " Recent unfollowers: "  + previous_follower_array.length);
             }
             function moveToPost(){
+                let username = $("#text_username").val();
+                let link = $("#selectPerm").val();
+                if(link === null) {
+                    return;
+                }
+                let href="https://steemit.com/@" + username + "/" + link;
+                window.open(href, "_blank");
+            }
+            function moveToBlog(){
                 let username = $("#votingListButton").val();
                 if(username === null) {
                     return;
@@ -366,6 +375,9 @@
                         </div>
                         <select class="custom-select" id="selectPerm" onchange='getVoting("SBD");'>
                         </select>
+                        <div class="input-group-append">
+                            <button type="button" class="btn btn-outline-secondary" onclick="moveToPost();">Go</button>
+                        </div>
                     <button type="button" id="btn_check" class="btn btn-primary btn-lg btn-block" style="background-color:#205894; border-color:#205894; margin-top:10px;" onclick="getSteemData();">Check Now</button>
                     </div>
 
@@ -378,10 +390,10 @@
                     </div>
 
                     <div class="input-group mb-3">
-                        <button class="custom-select" style="text-align:left;" type="button" id="votingListButton" data-toggle="dropdown" aria-haspopup="false" aria-expanded="false"></button>
-                        <div id="dropdownList" class="dropdown-menu" aria-labelledby="votingListButton" style="overflow:scroll; height:30em; width:90%"></div>
+                        <button class="custom-select" style="text-align:left; overflow:hidden;" type="button" id="votingListButton" data-toggle="dropdown" aria-haspopup="false" aria-expanded="false"></button>
+                        <div id="dropdownList" class="dropdown-menu" aria-labelledby="votingListButton" style="overflow:scroll; height:30em; width:95%"></div>
                         <div class="input-group-append">
-                            <button type="button" class="btn btn-outline-secondary" onclick="moveToPost();">Go!</button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="moveToBlog();">Go!</button>
                         </div>
                     </div>
                 </div>
